@@ -1,0 +1,131 @@
+// Here you can add other styles
+
+.login-or {
+	color: #d4d4d4;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	position: relative;
+}
+.or-line {
+	background-color: #e5e5e5;
+	height: 1px;
+	margin-bottom: 0;
+	margin-top: 0;
+	display: block;
+}
+.span-or {
+	background-color: #fff;
+	display: block;
+	left: 50%;
+	margin-left: -20px;
+	position: absolute;
+	text-align: center;
+	top: -3px;
+	width: 42px;
+}
+.btn-info{
+	background-color: #2AAFDC !important;
+}
+.btn-main{
+    color: white;
+    background-color: #2AAFDC;
+}
+.btn-main:hover {
+    color: white;
+    background-color: #51bfe7;
+  }
+.google{
+    color: white;
+    background-color: #DD4B39;
+}
+.google:hover {
+    color: white;
+    background-color: #db6252;
+  }
+.github{
+    color: white;
+    background-color: #444444
+    ;
+}
+.github:hover {
+    color: white;
+    background-color: #646464
+    ;
+  }
+a{ color: #AFB3BA;
+    text-decoration: none;
+}
+a:hover{
+    color: #706f6f;
+    text-decoration: none;
+}
+.forgot-link {
+    display: inline-block;
+    font-size: 13px;
+	font-weight:400;
+    margin-bottom: 10px;
+}
+// .sidebar {
+// 	width: 10vw !important;
+// 	color:white;
+// 	background-color: #353A40;
+// 	margin:0px;
+// }
+// .wrapper{
+// 	padding-left: 10vw!important;
+// }
+.t-head{
+	color:white !important;
+	background-color: #74777B !important;
+	border-color: #8b8f94 !important;
+}
+hr{
+	margin: 0rem !important;
+}
+.sidebar-nav li{
+	background-color: #2AAFDC;
+}
+.nav-menu{
+	background-color: #2AAFDC;	
+	color:white;
+}
+.middle-align{
+	text-align: center !important;
+}
+.bg-fields{
+	background-color: #FBF8F8;
+}
+.bg-btn{
+	color:white !important;
+	background-color: #83868b;
+}
+// .bg-logout{
+// 	background-color: #222529;
+// }
+@media screen and (min-width: 480px) {
+	.mx-6{
+		margin: 0 80px !important;
+	}
+  }
+@media screen and (max-width: 480px) {
+.mx-6{
+	margin: 0px !important;
+}
+}
+
+.acc-head{
+	background-color: yellow !important;
+}
+ .logo-brand{
+	image-rendering: crisp-edges;
+	image-rendering: -moz-crisp-edges;          /* Firefox */
+	image-rendering: -o-crisp-edges;            /* Opera */
+	image-rendering: -webkit-optimize-contrast; /* Webkit (non-standard naming)*/
+	-ms-interpolation-mode: nearest-neighbor;
+	background-size: cover;background-position:50% 50%;
+ }
+ .cursor-change{
+	cursor: pointer;
+ }
