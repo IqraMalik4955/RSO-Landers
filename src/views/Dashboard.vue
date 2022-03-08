@@ -11,6 +11,7 @@
             @click="
               () => {
                 visibleVerticallyCenteredDemo = true
+                this.selected_lang = []
               }
             "
           >
@@ -40,15 +41,17 @@
                       <CFormLabel
                         for="colFormLabelSm"
                         class="col-2 col-sm-3 col-md-2 col-lg-2 col-form-label col-form-label-sm"
-                        >ID</CFormLabel
+                        >Code</CFormLabel
                       >
+
                       <CCol class="col-10 col-sm-9 col-md-10 col-lg-10">
                         <CFormInput
                           type="text"
                           class="bg-fields form-control form-control-sm"
                           id="colFormLabelSm"
                           placeholder=""
-                          readonly
+                          v-model="this.dataToSend.code"
+                          required
                         />
                       </CCol>
                     </div>
@@ -57,17 +60,27 @@
                     <div class="d-flex justify-content-lg-between">
                       <CFormLabel
                         for="colFormLabelSm"
-                        class="col-2 col-sm-3 col-md-2 col-lg-2 col-form-label col-form-label-sm"
-                        >Code</CFormLabel
+                        class="col-2 col-sm-3 col-md-2 col-lg-5 col-form-label col-form-label-sm"
+                        >Clone condition from</CFormLabel
                       >
-                      <CCol class="col-10 col-sm-9 col-md-10 col-lg-10">
-                        <CFormInput
-                          type="text"
+                      <CCol class="col-10 col-sm-9 col-md-10 col-lg-7">
+                        <select
+                          name="Lenders Code"
+                          id="cars"
                           class="bg-fields form-control form-control-sm"
-                          id="colFormLabelSm"
-                          placeholder=""
-                          v-model="this.dataToSend.code"
-                        />
+                          v-model="this.dataToSend.clone"
+                        >
+                          <option value="" selected disabled>
+                            Choose Lenders
+                          </option>
+                          <option
+                            v-for="singleLender in this.lendersData"
+                            :key="singleLender.id"
+                            :value="singleLender.id"
+                          >
+                            {{ singleLender.code }}
+                          </option>
+                        </select>
                       </CCol>
                     </div>
                   </div>
@@ -93,17 +106,18 @@
                             <CButton
                               class="btn-info ms-lg-5"
                               shape="rounded-circle"
-                              @click="
-                                () => {
-                                  this.count_add++
-                                }
-                              "
+                              @click.prevent="add_resources()"
                             >
                               <CIcon name="cilPlus" class="text-white" />
                             </CButton>
                           </CTableHeaderCell>
                         </CTableRow>
-                        <CTableRow v-for="n in parseInt(count_add)" :key="n">
+
+                        <CTableRow
+                          v-for="(singleresource, n) in this.dataToSend
+                            .resources"
+                          :key="n"
+                        >
                           <CTableDataCell scope="row">
                             <CInputGroup class="">
                               <CDropdown alignment="end" variant="input-group">
@@ -111,23 +125,61 @@
                                   color="secondary"
                                   size="sm"
                                   variant="outline"
-                                  class="d-flex align-items-center justify-content-between bg-fields"
+                                  class="d-flex align-items-center justify-content-between bg-fields locale"
                                   style="width: 120px; overflow-x: visible"
                                 >
                                   <label
                                     class="d-flex align-items-center form-check-label"
                                     for="flexRadioDefault1"
+                                    v-if="this.selected_lang[n]"
                                   >
-                                    English
+                                    {{ this.selected_lang[n] }}
+
+                                    <div class="lang">
+                                      <CIcon
+                                        v-if="
+                                          this.dataToSend.resources[n]
+                                            .localeCode === 'en-ca'
+                                        "
+                                        name="cifUs"
+                                        class=""
+                                        size="xl"
+                                      />
+                                      <CIcon
+                                        v-else-if="
+                                          this.dataToSend.resources[n]
+                                            .localeCode === 'fr-ca'
+                                        "
+                                        name="cifFr"
+                                        class=""
+                                        size="xl"
+                                      />
+                                      <CIcon
+                                        v-else-if="
+                                          this.dataToSend.resources[n]
+                                            .localeCode === 'sp-es'
+                                        "
+                                        name="cifEs"
+                                        class=""
+                                        size="xl"
+                                      />
+                                    </div>
                                   </label>
-                                  <CIcon name="cifUs" class="mx-2" size="xl" />
+
+                                  <label
+                                    class="d-flex align-items-center form-check-label"
+                                    for="flexRadioDefault1"
+                                    v-else
+                                  >
+                                    Select
+                                  </label>
                                 </CDropdownToggle>
                                 <CDropdownMenu style="width: 200px">
                                   <CDropdownHeader
                                     component="h6"
                                     class="bg-light fw-semibold py-2"
                                   >
-                                    Select Country
+                                    Select Language
                                   </CDropdownHeader>
                                   <CDropdownDivider />
                                   <div
@@ -143,8 +195,17 @@
                                           type="radio"
                                           name="flexRadioDefault"
                                           id="flexRadioDefault1"
-                                          value="singleLocale.code"
-                                          @click="setFlag(singleLocale.code)"
+                                          v-model="
+                                            this.dataToSend.resources[n]
+                                              .localeCode
+                                          "
+                                          @click.prevent="
+                                            setLanguage_add_lender(
+                                              singleLocale.code,
+                                              n,
+                                              singleLocale.name,
+                                            )
+                                          "
                                         />
                                         <label
                                           class="form-check-label"
@@ -203,7 +264,7 @@
                               id="exampleFormControlInput1"
                               placeholder=""
                               v-model="
-                                this.dataToSend.resources[0].resourceName
+                                this.dataToSend.resources[n].resourceName
                               "
                             />
                           </CTableDataCell>
@@ -213,7 +274,7 @@
                               class="bg-fields"
                               id="exampleFormControlInput1"
                               v-model="
-                                this.dataToSend.resources[0].resourceDesc
+                                this.dataToSend.resources[n].resourceDesc
                               "
                               placeholder=""
                             />
@@ -241,7 +302,15 @@
                 class="text-white px-4 btn-dark"
                 @click="
                   () => {
-                    visibleVerticallyCenteredDemo = false
+                    //visibleVerticallyCenteredDemo = false
+                    this.count_add = 1
+                    this.dataToSend.resources = [
+                      {
+                        resourceName: '',
+                        resourceDesc: '',
+                        localeCode: '',
+                      },
+                    ]
                   }
                 "
               >
@@ -268,53 +337,92 @@
             <div class="pe-2">
               <strong>Language 1 </strong>
             </div>
-            <CForm class="ps-2">
-              <CDropdown alignment="end" variant="input-group">
-                <CDropdownToggle
-                  color="secondary"
-                  size="sm"
-                  variant="outline"
-                  class="d-flex align-items-center justify-content-between"
-                  style="width: 120px"
-                  id="flexRadioDefault1"
-                >
-                  <label
-                    class="d-flex align-items-center form-check-label"
-                    for="flexRadioDefault1"
+            <div class="ps-2">
+              <CForm class="d-flex">
+                <CDropdown alignment="end" variant="input-group">
+                  <CDropdownToggle
+                    color="secondary"
+                    size="sm"
+                    variant="outline"
+                    class="d-flex align-items-center justify-content-between locale"
+                    style="width: 120px"
                   >
-                    English
-                  </label>
-                  <CIcon name="cifUs" class="mx-2" size="xl" />
-                </CDropdownToggle>
-                <CDropdownMenu style="width: 200px">
-                  <CDropdownHeader
-                    component="h6"
-                    class="bg-light fw-semibold py-2"
-                  >
-                    Select Country
-                  </CDropdownHeader>
-                  <CDropdownDivider />
-                  <div
-                    v-for="singleLocale in this.localesData"
-                    :key="singleLocale.id"
-                  >
-                    <CDropdownItem>
-                      <div
-                        class="d-flex align-items-center justify-content-between form-check"
+                    <label
+                      class="d-flex align-items-center form-check-label"
+                      for="flexRadioDefault1"
+                      :v-model="this.get_user_locale1"
+                    >
+                      <!-- {{ this.lang_name_first }} -->
+                      {{ this.get_user_locale1 }}
+
+                      <div class="lang">
+                        <CIcon
+                          v-if="this.get_user_locale1 === 'en-ca'"
+                          name="cifUs"
+                          class=""
+                          size="xl"
+                        />
+                        <CIcon
+                          v-else-if="this.get_user_locale1 === 'fr-ca'"
+                          name="cifFr"
+                          class=""
+                          size="xl"
+                        />
+                        <CIcon
+                          v-else-if="this.get_user_locale1 === 'sp-es'"
+                          name="cifEs"
+                          class=""
+                          size="xl"
+                        />
+                      </div>
+                    </label>
+
+                    <!-- <label
+                      class="d-flex align-items-center form-check-label"
+                      for="flexRadioDefault1"
+                      v-else
+                    >
+                      Select
+                    </label> -->
+                  </CDropdownToggle>
+                  <CDropdownMenu style="width: 200px">
+                    <CDropdownHeader
+                      component="h6"
+                      class="bg-light fw-semibold py-2"
+                    >
+                      Select Language
+                    </CDropdownHeader>
+                    <CDropdownDivider />
+                    <div
+                      v-for="singleLocale in this.localesData"
+                      :key="singleLocale.id"
+                    >
+                      <CDropdownItem
+                        v-if="this.get_user_locale1 !== singleLocale.code"
                       >
-                        <CFormCheck type="radio" id="flexRadioDefault1">
-                          <label for="flexRadioDefault1">
+                        <div class="d-flex align-items-center form-check">
+                          <input
+                            class="form-check-input"
+                            type="radio"
+                            name="flexRadioDefault"
+                            id="flexRadioDefault1"
+                            @click="
+                              setLanguageone(
+                                singleLocale.name,
+                                singleLocale.code,
+                              ),
+                                update_user_locale1(singleLocale.code)
+                            "
+                          />
+                          <label
+                            class="form-check-label"
+                            for="flexRadioDefault1"
+                          >
                             {{ singleLocale.name }} ({{ singleLocale.code }})
                           </label>
                           <CIcon
                             v-if="singleLocale.code === 'en-ca'"
                             name="cifUs"
-                            class=""
-                            size="xl"
-                          />
-                          <CIcon
-                            v-if="singleLocale.code === 'ar_iq'"
-                            name="cifIq"
                             class=""
                             size="xl"
                           />
@@ -330,14 +438,14 @@
                             class=""
                             size="xl"
                           />
-                        </CFormCheck>
-                      </div>
-                    </CDropdownItem>
-                    <CDropdownDivider />
-                  </div>
-                </CDropdownMenu>
-              </CDropdown>
-            </CForm>
+                        </div>
+                      </CDropdownItem>
+                      <CDropdownDivider />
+                    </div>
+                  </CDropdownMenu>
+                </CDropdown>
+              </CForm>
+            </div>
           </div>
         </div>
         <div>
@@ -352,38 +460,74 @@
                     color="secondary"
                     size="sm"
                     variant="outline"
-                    class="d-flex align-items-center justify-content-between"
+                    class="d-flex align-items-center justify-content-between locale"
                     style="width: 120px"
                   >
                     <label
                       class="d-flex align-items-center form-check-label"
                       for="flexRadioDefault1"
+                      :v-model="this.get_user_locale2"
                     >
-                      French
+                      {{ this.get_user_locale2 }}
+
+                      <div class="lang">
+                        <CIcon
+                          v-if="this.get_user_locale2 === 'en-ca'"
+                          name="cifUs"
+                          class=""
+                          size="xl"
+                        />
+                        <CIcon
+                          v-else-if="this.get_user_locale2 === 'fr-ca'"
+                          name="cifFr"
+                          class=""
+                          size="xl"
+                        />
+                        <CIcon
+                          v-else-if="this.get_user_locale2 === 'sp-es'"
+                          name="cifEs"
+                          class=""
+                          size="xl"
+                        />
+                      </div>
                     </label>
-                    <CIcon name="cifFr" class="mx-2" size="xl" />
+
+                    <!-- <label
+                      class="d-flex align-items-center form-check-label"
+                      for="flexRadioDefault1"
+                      v-else
+                    >
+                      Select
+                    </label> -->
                   </CDropdownToggle>
                   <CDropdownMenu style="width: 200px">
                     <CDropdownHeader
                       component="h6"
                       class="bg-light fw-semibold py-2"
                     >
-                      Select Country
+                      Select Language
                     </CDropdownHeader>
                     <CDropdownDivider />
                     <div
                       v-for="singleLocale in this.localesData"
                       :key="singleLocale.id"
                     >
-                      <CDropdownItem>
-                        <div
-                          class="d-flex align-items-center justify-content-between form-check"
-                        >
+                      <CDropdownItem
+                        v-if="this.get_user_locale2 !== singleLocale.code"
+                      >
+                        <div class="d-flex align-items-center form-check">
                           <input
                             class="form-check-input"
                             type="radio"
                             name="flexRadioDefault"
                             id="flexRadioDefault1"
+                            @click="
+                              setLanguagetwo(
+                                singleLocale.name,
+                                singleLocale.code,
+                              ),
+                                update_user_locale2(singleLocale.code)
+                            "
                           />
                           <label
                             class="form-check-label"
@@ -438,6 +582,7 @@
                   class=""
                   size="sm"
                   placeholder="Search Globally"
+                  v-model="filter"
                 />
               </CForm>
             </div>
@@ -458,19 +603,46 @@
             <CTableHeaderCell scope="col" class="text-white">
               <div class="d-inline-flex align-items-center">
                 Code
-                <CIcon name="cilSwapVertical" class="ms-2" />
+                <CIcon
+                  name="cilSwapVertical"
+                  class="ms-2 mycode_sorting"
+                  @click="sort_lenders_code('code')"
+                  v-bind:class="[sortBy === '' ? sortDirection : '']"
+                />
               </div>
             </CTableHeaderCell>
             <CTableHeaderCell scope="col" class="text-white">
               <div class="d-inline-flex align-items-center">
                 Name
-                <CIcon name="cilSwapVertical" class="ms-2" />
+                <CIcon
+                  name="cilSwapVertical"
+                  class="ms-2 mycode_sorting"
+                  @click="sort_lenders_name('name')"
+                  v-bind:class="[sortBy === '' ? sortDirection : '']"
+                />
                 <CButton
                   class="d-inline-flex align-items-center text-white bg-btn m-0 p-0 ms-3 px-1"
                   size="sm"
                 >
-                  <div class="d-none d-lg-block pe-2">ENG</div>
-                  <CIcon name="cifUs" size="lg" class="pt-1" />
+                  <!-- <div class="d-none d-lg-block pe-2">ENG</div> -->
+                  <CIcon
+                    name="cifUs"
+                    size="lg"
+                    class="pt-1"
+                    v-if="get_user_locale1 === 'en-ca'"
+                  />
+                  <CIcon
+                    name="cifFr"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale1 === 'fr-ca'"
+                  />
+                  <CIcon
+                    name="cifEs"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale1 === 'sp-es'"
+                  />
                 </CButton>
               </div>
             </CTableHeaderCell>
@@ -481,8 +653,25 @@
                   class="d-inline-flex align-items-center text-white bg-btn m-0 p-0 ms-3 px-1"
                   size="sm"
                 >
-                  <div class="d-none d-lg-block pe-2">FRN</div>
-                  <CIcon name="cifFr" size="lg" class="pt-1" />
+                  <!-- <div class="d-none d-lg-block pe-2">FRN</div> -->
+                  <CIcon
+                    name="cifUs"
+                    size="lg"
+                    class="pt-1"
+                    v-if="get_user_locale2 === 'en-ca'"
+                  />
+                  <CIcon
+                    name="cifFr"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale2 === 'fr-ca'"
+                  />
+                  <CIcon
+                    name="cifEs"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale2 === 'sp-es'"
+                  />
                 </CButton>
               </div>
             </CTableHeaderCell>
@@ -493,8 +682,25 @@
                   class="d-inline-flex align-items-center text-white bg-btn m-0 p-0 ms-3 px-1"
                   size="sm"
                 >
-                  <div class="d-none d-lg-block pe-2">ENG</div>
-                  <CIcon name="cifUs" size="lg" class="pt-1" />
+                  <!-- <div class="d-none d-lg-block pe-2">ENG</div> -->
+                  <CIcon
+                    name="cifUs"
+                    size="lg"
+                    class="pt-1"
+                    v-if="get_user_locale1 === 'en-ca'"
+                  />
+                  <CIcon
+                    name="cifFr"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale1 === 'fr-ca'"
+                  />
+                  <CIcon
+                    name="cifEs"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale1 === 'sp-es'"
+                  />
                 </CButton>
               </div>
             </CTableHeaderCell>
@@ -505,8 +711,25 @@
                   class="d-inline-flex align-items-center text-white bg-btn m-0 p-0 ms-3 px-1"
                   size="sm"
                 >
-                  <div class="d-none d-lg-block pe-2">FRN</div>
-                  <CIcon name="cifFr" size="lg" class="pt-1" />
+                  <!-- <div class="d-none d-lg-block pe-2">FRN</div> -->
+                  <CIcon
+                    name="cifUs"
+                    size="lg"
+                    class="pt-1"
+                    v-if="get_user_locale2 === 'en-ca'"
+                  />
+                  <CIcon
+                    name="cifFr"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale2 === 'fr-ca'"
+                  />
+                  <CIcon
+                    name="cifEs"
+                    size="lg"
+                    class="pt-1"
+                    v-else-if="get_user_locale2 === 'sp-es'"
+                  />
                 </CButton>
               </div>
             </CTableHeaderCell>
@@ -514,7 +737,7 @@
         </CTableHead>
         <CTableBody>
           <CTableRow
-            v-for="singleLender in this.lendersData"
+            v-for="singleLender in filteredlenders"
             :key="singleLender.id"
           >
             <CTableDataCell>
@@ -528,7 +751,12 @@
                   </div>
                 </a>
                 <!-- <router-link to="/conditions"> -->
-                <a @click="GoToLenderConditions(singleLender.id)">
+                <a
+                  class="cursor"
+                  @click="
+                    GoToLenderConditions(singleLender.id, singleLender.code)
+                  "
+                >
                   <div class="rounded bg-body shadow-sm mx-1 text-dark">
                     <font-awesome-icon
                       :icon="['fas', 'cog']"
@@ -560,18 +788,29 @@
             <CTableDataCell> {{ singleLender.id }} </CTableDataCell>
             <CTableDataCell> {{ singleLender.code }} </CTableDataCell>
             <CTableDataCell
-              v-for="singleResource in singleLender.resources"
+              v-for="(singleResource, index) in singleLender.resources"
               :key="singleResource.id"
+              v-show="index <= 1"
             >
               {{ singleResource.resourceName }}
             </CTableDataCell>
+
+            <CTableDataCell v-show="singleLender.resources.length == 1"
+              >--
+            </CTableDataCell>
+
             <!-- <CTableDataCell> Otto </CTableDataCell> -->
             <CTableDataCell
-              v-for="singleResource in singleLender.resources"
+              v-for="(singleResource, index) in singleLender.resources"
               :key="singleResource.id"
+              v-show="index <= 1"
             >
               {{ singleResource.resourceDesc }}
             </CTableDataCell>
+            <CTableDataCell v-show="singleLender.resources.length == 1"
+              >--
+            </CTableDataCell>
+
             <!--<CTableDataCell> Vivamus neque lorem </CTableDataCell> -->
           </CTableRow>
         </CTableBody>
@@ -579,7 +818,7 @@
       <!-- TABLE ENDS HERE -->
     </CCol>
   </CRow>
-  <!-- Modal Edit Icon for editing existing data-->
+  <!-- Modal Edit Icon for editing existing lender resources data-->
   <CModal
     size="lg"
     alignment="center"
@@ -647,18 +886,14 @@
                     <CButton
                       class="ms-lg-auto btn-info ms-2"
                       shape="rounded-circle"
-                      @click="
-                        () => {
-                          this.count++
-                        }
-                      "
+                      @click.prevent="update_resources()"
                     >
                       <CIcon name="cilPlus" class="text-white" />
                     </CButton>
                   </CTableHeaderCell>
                 </CTableRow>
                 <CTableRow
-                  v-for="singleResource in this.lenderByID.resources"
+                  v-for="(singleResource, res_index) in this.CurrentlenderByID"
                   :key="singleResource.id"
                 >
                   <CTableDataCell scope="row">
@@ -668,23 +903,91 @@
                           color="secondary"
                           size="sm"
                           variant="outline"
-                          class="d-flex align-items-center justify-content-between bg-fields"
+                          class="d-flex align-items-center justify-content-between bg-fields locale"
                           style="width: 120px"
                         >
                           <label
                             class="d-flex align-items-center form-check-label"
                             for="flexRadioDefault1"
+                            v-if="this.update_lang[res_index]"
+                          >
+                            {{ this.update_lang[res_index] }}
+
+                            <div class="lang">
+                              <CIcon
+                                v-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'en-ca'
+                                "
+                                name="cifUs"
+                                class=""
+                                size="xl"
+                              />
+                              <CIcon
+                                v-else-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'fr-ca'
+                                "
+                                name="cifFr"
+                                class=""
+                                size="xl"
+                              />
+                              <CIcon
+                                v-else-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'sp-es'
+                                "
+                                name="cifEs"
+                                class=""
+                                size="xl"
+                              />
+                            </div>
+                          </label>
+
+                          <label
+                            class="d-flex align-items-center form-check-label"
+                            for="flexRadioDefault1"
+                            v-else
                           >
                             {{ singleResource.localeCode }}
+
+                            <div class="lang">
+                              <CIcon
+                                v-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'en-ca'
+                                "
+                                name="cifUs"
+                                class=""
+                                size="xl"
+                              />
+                              <CIcon
+                                v-else-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'fr-ca'
+                                "
+                                name="cifFr"
+                                class=""
+                                size="xl"
+                              />
+                              <CIcon
+                                v-else-if="
+                                  this.CurrentlenderByID[res_index]
+                                    .localeCode === 'sp-es'
+                                "
+                                name="cifEs"
+                                class=""
+                                size="xl"
+                              />
+                            </div>
                           </label>
-                          <CIcon name="cifUs" class="mx-2" size="xl" />
                         </CDropdownToggle>
                         <CDropdownMenu style="width: 200px">
                           <CDropdownHeader
                             component="h6"
                             class="bg-light fw-semibold py-2"
                           >
-                            Select Country
+                            Select Language
                           </CDropdownHeader>
                           <CDropdownDivider />
                           <div
@@ -692,14 +995,19 @@
                             :key="singleLocale.id"
                           >
                             <CDropdownItem>
-                              <div
-                                class="d-flex align-items-center justify-content-between form-check"
-                              >
+                              <div class="d-flex align-items-center form-check">
                                 <input
                                   class="form-check-input"
                                   type="radio"
                                   name="flexRadioDefault"
                                   id="flexRadioDefault1"
+                                  @click="
+                                    update_set_lang(
+                                      res_index,
+                                      singleLocale.name,
+                                      singleLocale.code,
+                                    )
+                                  "
                                 />
                                 <label
                                   class="form-check-label"
@@ -769,6 +1077,7 @@
           @click="
             () => {
               visibleVerticallyCenteredDemo1 = false
+              this.update_lang = []
             }
           "
         >
@@ -776,8 +1085,8 @@
         </CButton>
         <CButton
           class="text-white px-4 btn-info"
-          @click="updateLenderByID(lenderByID.id)"
-          >Save me
+          @click.prevent="updateLenderByID()"
+          >Save
         </CButton>
       </CModalFooter>
     </CForm>
@@ -791,9 +1100,21 @@ import checkIcon from '@/assets/images/icons/check.png'
 import deleteIcon from '@/assets/images/icons/delete.png'
 
 export default {
-  name: 'Login',
+  name: 'Dashboard',
   data() {
     return {
+      // Get User Id through params
+      user_id: localStorage.getItem('user_id'),
+      sort_by: 'code',
+      sort_by_name: 'name',
+      sort_direction: 'asc',
+      sort_direction_name: 'asc',
+      filter: '',
+      lang_name_first: '',
+      lang_code_first: '',
+      lang_name_second: '',
+      lang_code_second: '',
+      selected_lang: [],
       token: localStorage.getItem('token'),
       count: 1,
       count_add: 1,
@@ -806,6 +1127,7 @@ export default {
       lendersData: {},
       localesData: {},
       lenderByID: {},
+      CurrentlenderByID: [],
       singleLendertempData: {},
       dataToSend: {
         code: '',
@@ -816,9 +1138,25 @@ export default {
             localeCode: '',
           },
         ],
+        clone: '',
+      },
+
+      updated_lender_data: [],
+      update_lang: [],
+
+      // Get User locale 1 & 2
+      user_detail: [],
+      get_user_locale1: '',
+      get_user_locale2: '',
+
+      //Update user locales object
+      update_locales: {
+        locale1: '',
+        locale2: '',
       },
     }
   },
+
   beforeCreate: function () {
     if (localStorage.getItem('token') === null) {
       console.log('you can not access')
@@ -828,9 +1166,107 @@ export default {
     }
   },
   created: function () {
-    this.getLenders(), this.getLocales()
+    // this.getLenders(),
+    this.getLocales(), this.getuserdetail(), this.getLenders_by_user()
   },
+
+  computed: {
+    filteredlenders: function () {
+      console.log('i m in computed of filter' + this.lendersData, this.filter)
+
+      //Extras
+      // Filter by locales code
+      // if (this.lang_code_first !== '')
+      //   return item.resources.some(
+      //     ({ localeCode }) => localeCode === this.lang_code_first,
+      //   )
+
+      return (
+        Object.values(this.lendersData)
+
+          // Filter Global Search Bar and Language Search
+
+          .filter((item) => {
+            return (
+              item.code.toLowerCase().indexOf(this.filter.toLowerCase()) >= 0 ||
+              item.resources.some(
+                ({ resourceName }) =>
+                  resourceName
+                    .toLowerCase()
+                    .indexOf(this.filter.toLowerCase()) >= 0 ||
+                  item.resources.some(
+                    ({ resourceDesc }) =>
+                      resourceDesc
+                        .toLowerCase()
+                        .indexOf(this.filter.toLowerCase()) >= 0,
+                  ),
+              )
+            )
+          })
+
+          // item.resources.some(
+          // ({ resourceName }) => resourceName === this.filter,
+          //  )
+          // Sort By Code Attribute
+
+          .sort((len1, len2) => {
+            console.log(this.sort_direction, this.sort_direction_name)
+            if (this.sort_direction === 'desc')
+              return len1.code.localeCompare(len2.code)
+            if (this.sort_direction_name === 'desc')
+              return len1.resources[0].resourceName.localeCompare(
+                len2.resources[0].resourceName,
+              )
+
+            // This is for asc & desc sorting
+
+            // let modifier = 1
+            // if (this.sort_direction === 'desc') modifier = -1
+            // if (len1[this.sort_by] < len2[this.sort_by]) return -1 * modifier
+            // if (len1[this.sort_by] > len2[this.sort_by]) return 1 * modifier
+            // if (len1[this.sort_by_name] < len2[this.sort_by_name])
+            //   return -1 * modifier
+            // if (len1[this.sort_by_name] > len2[this.sort_by_name])
+            //   return 1 * modifier
+
+            // return 0
+          })
+      )
+    },
+  },
+
   methods: {
+    sort_lenders_code(name) {
+      console.log(name)
+      this.sort_direction_name = 'asc'
+      if (name === this.sort_by) {
+        this.sort_direction = this.sort_direction === 'asc' ? 'desc' : 'asc'
+      }
+      this.sort_by = name
+    },
+
+    sort_lenders_name(name) {
+      console.log(name)
+      this.sort_direction = 'asc'
+      if (name === this.sort_by_name) {
+        this.sort_direction_name =
+          this.sort_direction_name === 'asc' ? 'desc' : 'asc'
+      }
+      this.sort_by_name = name
+    },
+
+    // Dashboard Select Languages
+
+    setLanguageone(lan1, code) {
+      this.lang_name_first = lan1
+      this.lang_code_first = code
+    },
+
+    setLanguagetwo(lan2, code) {
+      this.lang_name_second = lan2
+      this.lang_code_second = code
+    },
+
     //delete API
     deleteLender(lenderID) {
       let api = 'https://rsoapi.squarera.online/api/lenders/' + lenderID
@@ -842,18 +1278,35 @@ export default {
         })
         .then((response) => {
           if (response.status == '200') {
-            this.getLenders()
+            this.getLenders_by_user()
           } else {
             alert('Record not loaded')
           }
         })
     },
     //end delete Api
-    setFlag(code) {
-      this.dataToSend.resources[0].localeCode = code
+    setLanguage_add_lender(code, n, lang_name) {
+      this.dataToSend.resources[n].localeCode = code
+      console.log(n + lang_name + this.dataToSend.resources[n].localeCode)
+      this.selected_lang[n] = lang_name
+
+      // let languages_codes = []
+
+      // languages_codes.push(code)
+
+      // console.log(
+      //   'This is selelected locale array:' + this.selected_lang,
+      //   languages_codes,
+      // )
     },
+
     // post APIS FUNCTIONS
     addNewLender() {
+      console.log('testinng' + JSON.stringify(this.dataToSend))
+      if (this.dataToSend.clone == '') {
+        delete this.dataToSend.clone
+        //alert(JSON.stringify(this.dataToSend))
+      }
       let api = 'https://rsoapi.squarera.online/api/lenders'
       this.axios
         .post(api, this.dataToSend, {
@@ -863,14 +1316,64 @@ export default {
         })
         .then((response) => {
           if (response.status == '200') {
-            this.dataToSend = {}
+            // console.log(
+            //   'Add new lender response' + JSON.stringify(response.data.id),
+            // )
+            let lender_id = [
+              {
+                lender: response.data.id,
+              },
+            ]
+
+            console.log('Add new lender response with lender id' + lender_id)
+            this.Lender_link_user(lender_id)
+            this.dataToSend.resources = [
+              {
+                code: '',
+                resourceName: '',
+                resourceDesc: '',
+                localeCode: '',
+                clone: '',
+              },
+            ]
+            this.selected_lang = []
             this.visibleVerticallyCenteredDemo = false
-            this.getLenders()
+            //this.getLenders()
+            this.getLenders_by_user()
+            this.$router.go()
           } else {
             alert('Record not loaded')
           }
         })
     },
+
+    add_resources() {
+      this.dataToSend.resources.push({
+        resourceName: '',
+        resourceDesc: '',
+        localeCode: '',
+      })
+    },
+
+    // Lender Link to user
+    Lender_link_user(lender_id) {
+      let api = 'https://rsoapi.squarera.online/api/lenders/user'
+      this.axios
+        .post(api, lender_id, {
+          headers: {
+            Authorization: this.token,
+          },
+        })
+        .then((response) => {
+          if (response.status == '200') {
+            console.log('Lender_link_user success')
+            this.getLenders_by_user()
+          } else {
+            alert('Record not loaded')
+          }
+        })
+    },
+
     getLenders() {
       let token = this.token
       let api = 'https://rsoapi.squarera.online/api/lenders'
@@ -882,11 +1385,11 @@ export default {
         })
         .then((response) => {
           if (response.status == '200') {
-            this.lendersData = response.data
+            // this.lendersData = response.data
           } else {
             alert('Record not loaded')
           }
-          console.log(response.data)
+          //console.log(response.data)
         })
     },
     getLocales() {
@@ -899,19 +1402,20 @@ export default {
           },
         })
         .then((response) => {
+          console.log('We are in dashboard locales' + response.data)
           if (response.status == '200') {
             this.localesData = response.data
           } else {
             alert('Record not loaded')
           }
-          console.log(response.data)
         })
     },
-    GoToLenderConditions(id) {
+    GoToLenderConditions(id, code) {
       this.$store.state.id = id
-      this.$router.push('/conditions')
+      this.$router.push('/conditions/' + id + '/' + code)
     },
     getLenderbyID(id) {
+      this.update_lang = []
       let myId = parseInt(id)
       let token = this.token
       let api = 'https://rsoapi.squarera.online/api/lenders/' + myId
@@ -924,9 +1428,13 @@ export default {
         .then((response) => {
           if (response.status == '200') {
             this.lenderByID = response.data
-            this.singleLendertempData = response.data
+            this.CurrentlenderByID = response.data.resources
+            console.log(
+              'This is my single lender by id:' +
+                JSON.stringify(this.lenderByID),
+            )
+
             this.visibleVerticallyCenteredDemo1 = true
-            // Object.freeze(this.singleLendertempData)
           } else {
             alert('Record not loaded')
           }
@@ -936,25 +1444,27 @@ export default {
     },
     // GET APIS FUNCTIONS ENDS HERE
     // PUT APIS FUNCTIONS STARTS HERE
-    updateLenderByID(id) {
-      alert(id)
-      let tempData
-      tempData = this.lenderByID.resources
-      let myId = parseInt(id)
+    updateLenderByID() {
       let token = this.token
-      let updatedData = []
-      for (var key in tempData) {
-        updatedData.push({
-          // id: tempData[key].lender.toString(),
-          id: tempData[key].id,
-          resourceName: tempData[key].resourceName,
-          resourceDesc: tempData[key].resourceDesc,
-          localeCode: tempData[key].localeCode,
+
+      for (let index = 0; index < this.CurrentlenderByID.length; index++) {
+        const element = this.CurrentlenderByID[index]
+        console.log(
+          'This is our for loop data' + index + JSON.stringify(element),
+        )
+
+        this.updated_lender_data.push({
+          id: element.id,
+          lender: this.lenderByID.id,
+          localeCode: element.localeCode,
+          resourceDesc: element.resourceDesc,
+          resourceName: element.resourceName,
         })
       }
-      let api = 'https://rsoapi.squarera.online/api/lenders/resources/' + myId
+
+      let api = 'https://rsoapi.squarera.online/api/lenders/resources'
       this.axios
-        .put(api, updatedData, {
+        .put(api, this.updated_lender_data, {
           headers: {
             Authorization: token,
           },
@@ -963,7 +1473,124 @@ export default {
           if (response.status == '200') {
             console.log(response.status)
             this.visibleVerticallyCenteredDemo1 = false
-            this.getLenders()
+            this.getLenders_by_user()
+          } else {
+            console.log('data not found')
+          }
+        })
+    },
+
+    update_set_lang(index, name, code) {
+      console.log('Updated set locales' + index + name + code)
+
+      this.CurrentlenderByID[index].localeCode = code
+      this.update_lang[index] = name
+    },
+
+    update_resources() {
+      console.log('M entering')
+      this.lenderByID.resources.push({
+        resourceName: '',
+        resourceDesc: '',
+        localeCode: 'Select',
+        lender: '',
+      })
+    },
+
+    //Get user details by id on dashboard
+
+    getuserdetail() {
+      let token = this.token
+      let api = 'https://rsoapi.squarera.online/api/users/' + this.user_id
+      this.axios
+        .get(api, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          if (response.status == '200') {
+            this.user_detail = response.data
+            this.get_user_locale1 = response.data.locale1
+            this.get_user_locale2 = response.data.locale2
+
+            console.log(
+              'This is my get user locale 1 & 2 :' +
+                'Locale 1' +
+                this.get_user_locale1 +
+                'Locale 2' +
+                this.get_user_locale2,
+            )
+          } else {
+            alert('Record not loaded')
+          }
+        })
+    },
+
+    // Get Lenders by user
+
+    getLenders_by_user() {
+      let token = this.token
+      let api = 'https://rsoapi.squarera.online/api/lenders/user'
+      this.axios
+        .get(api, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          if (response.status == '200') {
+            this.lendersData = response.data
+          } else {
+            alert('Record not loaded')
+          }
+        })
+    },
+
+    // Update locale1 on dropdowns
+    update_user_locale1(localecode) {
+      this.update_locales = {
+        locale1: localecode,
+      }
+
+      let token = this.token
+
+      let api = 'https://rsoapi.squarera.online/api/auth/update'
+      this.axios
+        .put(api, this.update_locales, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          if (response.status == '200') {
+            console.log('User locale1 data is updated')
+            this.$router.go()
+          } else {
+            console.log('data not found')
+          }
+        })
+    },
+
+    // Update locale2 on dropdowns
+    update_user_locale2(localecode) {
+      this.update_locales = {
+        locale2: localecode,
+      }
+
+      let token = this.token
+
+      let api = 'https://rsoapi.squarera.online/api/auth/update'
+      this.axios
+        .put(api, this.update_locales, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          if (response.status == '200') {
+            console.log('User locale2 data is updated')
+            this.$router.go()
           } else {
             console.log('data not found')
           }

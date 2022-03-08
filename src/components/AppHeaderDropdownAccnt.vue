@@ -7,7 +7,7 @@
       <CDropdownHeader component="h6" class="bg-light fw-semibold py-2">
         User
       </CDropdownHeader>
-      <CDropdownItem @click="logout()">
+      <CDropdownItem @click="logout()" class="cursor">
         <CIcon icon="cil-lock-locked" /> Logout
       </CDropdownItem>
     </CDropdownMenu>
@@ -26,8 +26,9 @@ export default {
   },
   methods: {
     logout() {
-      alert(localStorage.getItem('token'))
+      //alert(localStorage.getItem('token'))
       localStorage.removeItem('token')
+      localStorage.removeItem('user_id')
       this.$router.push('/')
     },
   },

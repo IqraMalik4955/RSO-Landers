@@ -10,22 +10,27 @@ const routes = [
     component: () => import('@/views/pages/Login'),
   },
   {
+    path: '/password-request',
+    name: 'request_password',
+    component: () => import('@/views/pages/forgotpassword'),
+  },
+  {
+    path: '/passwordReset',
+    name: 'update_password',
+    component: () => import('@/views/pages/update_password'),
+  },
+  {
     path: '/dashboard',
     name: 'Home',
     component: DefaultLayout,
-    redirect: '/dashboard',
     children: [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () =>
-          import(/* webpackChunkName: "dashboard" */ '@/views/Dashboard.vue'),
+        component: () => import('@/views/Dashboard.vue'),
       },
       {
-        path: '/conditions',
+        path: '/conditions/:lender_id/:lender_code',
         name: 'Lenders Conditions',
         component: () => import('@/views/LendersConditions.vue'),
       },
@@ -34,11 +39,6 @@ const routes = [
         name: 'Effective Lenders Conditions',
         component: () => import('@/views/EffectiveLendersConditions.vue'),
       },
-      // {
-      //   path: '/login',
-      //   name: 'Login',
-      //   component: () => import('@/views/pages/Login'),
-      // },
     ],
   },
 ]

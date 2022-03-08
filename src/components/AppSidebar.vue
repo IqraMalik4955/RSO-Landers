@@ -25,8 +25,8 @@
       </div>
     </router-link>
     <!-- <AppSidebarNav /> -->
-    <CRow class="bg-logout mx-0 mt-auto">
-      <CCol :md="12" class="my-4 text-center">
+    <CRow class="bg-logout mx-0 my-mt-25">
+      <CCol :md="12" class="my-4 text-center cursor" @click="logout()">
         <CIcon name="cilAccountLogout" class="mx-2" size="xl" />
         <p class="d-none d-lg-block">Logout</p>
       </CCol>
@@ -61,6 +61,14 @@ export default {
       sidebarUnfoldable: computed(() => store.state.sidebarUnfoldable),
       sidebarVisible: computed(() => store.state.sidebarVisible),
     }
+  },
+
+  methods: {
+    logout() {
+      //alert(localStorage.getItem('token'))
+      localStorage.removeItem('token')
+      this.$router.push('/')
+    },
   },
 }
 </script>

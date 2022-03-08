@@ -27,11 +27,18 @@
               />
             </CInputGroup>
             <div class="text-end">
-              <a class="forgot-link"> Forgot Password ? </a>
+              <!-- <a class="forgot-link" to="/password-request">
+                Forgot Password ?
+              </a> -->
+              <router-link class="forgot-link" to="/password-request"
+                >Forgot Password ?</router-link
+              >
             </div>
             <!-- <router-link to="/dashboard"> -->
             <div class="d-grid gap-2">
-              <CButton @click="login" class="btn-main">CONTINUE</CButton>
+              <CButton @click.prevent="login" class="btn-main"
+                >CONTINUE</CButton
+              >
             </div>
             <!-- </router-link> -->
             <div class="login-or">
@@ -39,15 +46,15 @@
               <span class="span-or">or</span>
             </div>
             <div class="d-grid gap-2 my-3">
-              <CButton class="google" @click="handleClickSignIn">
+              <CButton class="google" @click.prevent="handleClickSignIn">
                 <CIcon name="cibGoogle" /> Continue with Google
               </CButton>
             </div>
-            <div class="d-grid gap-2 my-3">
-              <CButton class="github">
+            <!-- <div class="d-grid gap-2 my-3">
+              <CButton class="github" @click.prevent="authenticate('github')">
                 <CIcon name="cibGithub" /> Continue with Github
               </CButton>
-            </div>
+            </div> -->
             <!-- <div class="text-center dont-have">
               Don’t have an account?
               <a>Register</a>
@@ -81,11 +88,41 @@ export default {
     }
   },
   methods: {
+    //Github Login
+    authenticate: function (provider) {
+      console.log('Entering Git .........' + this.$auth)
+      this.$auth.authenticate(provider).then(function () {
+        // Execute application logic after successful social authentication
+        console.log('Git Success')
+      })
+    },
+
+    //Google Login
     async handleClickSignIn() {
       try {
         const googleUser = await this.$gAuth.signIn()
-        console.log('user', googleUser)
+        console.log('user email:', googleUser.Du.tv)
+        console.log('user token:', googleUser.wc.id_token)
         this.isSignIn = this.$gAuth.isAuthorized
+        //email: googleUser.Du.tv,
+        let api = 'https://rsoapi.squarera.online/api/loginwithgoogle'
+        this.axios
+          .post(api, { token: googleUser.wc.id_token })
+          .then((response) => {
+            if (response.status == '200') {
+              console.log(
+                'token',
+                response.data.token,
+                'user_id',
+                response.data.user.id,
+              )
+              window.localStorage.setItem('token', response.data.token)
+              window.localStorage.setItem('user_id', response.data.user.id)
+              this.$router.push('/dashboard')
+            } else {
+              alert('Record not loaded')
+            }
+          })
       } catch (error) {
         // On fail do something
         console.error(error)
@@ -93,13 +130,18 @@ export default {
       }
     },
     login() {
+      console.log('Calling login function')
       let api = 'https://rsoapi.squarera.online/api/login'
       this.axios
         .post(api, { email: this.email, password: this.password })
         .then((response) => {
-          console.log(response.data)
+          //console.log(response.data)
+          //console.log(response.status)
+          let user_id = response.data.user.id
+          console.log('Login user ID' + JSON.stringify(user_id))
           if (response.status == '200') {
             window.localStorage.setItem('token', response.data.token)
+            window.localStorage.setItem('user_id', user_id)
             this.$router.push('/dashboard')
           } else {
             alert('Record not loaded')

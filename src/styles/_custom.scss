@@ -1,5 +1,80 @@
+// Sort Lenders Conditions
+.my-lender-conditions-sorting:hover{
+	opacity: .5;
+}
+// Forgot Passworf Request
+.forgot-password-request-form{
+	margin-top: 45% !important;
+}
+// Locale label adjust
+.locale{
+	width: 199px !important;
+}
 // Here you can add other styles
+.form-check-label{
+	pointer-events: none;
+	width: 116px !important;
+}
+.dropdown-item .align-items-center {
+    align-items: center !important;
+}
 
+.dropdown-item .form-check-label {
+padding-left: 10px !important;
+}
+
+.dropdown-item  .icon{
+	margin-left: 10px !important;
+}
+//Efective Lender Conditions
+
+.my-effective-lender-dropdown{
+	width: 29.5% !important;
+}
+.mycheckbox{
+	  margin-top: 10px;
+	  transform : scale(2);
+	  margin-left: 7px;
+  }
+
+
+// Dashboard
+
+.lang{
+	margin-left: 15px;
+}
+.mycode_sorting:hover{
+	opacity: .5;
+}
+.sidebar{
+	background: #343A40 !important;
+	display: block !important;
+}
+.logo-brand{
+	padding: 15px !important;
+}
+// .hide{
+// 	display: block !important;
+// }
+// html:not([dir=rtl]) .sidebar.hide:not(.sidebar-end){
+// 	margin: auto !important;
+// }
+// .header{
+// 	padding-left: 6.5rem !important;
+// }
+// .my-padding{
+// 	padding-left: 6.5rem !important;
+// }
+.cursor{
+	cursor: pointer;
+}
+.multiselect{
+	min-height: 30px !important;
+}
+.my-mt-25{
+	margin-top: 25rem !important;
+}
+// End Dashboard
 .login-or {
 	color: #d4d4d4;
 	margin-bottom: 20px;
