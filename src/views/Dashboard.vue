@@ -183,7 +183,7 @@
                                   </CDropdownHeader>
                                   <CDropdownDivider />
                                   <div
-                                    v-for="singleLocale in this.localesData"
+                                    v-for="singleLocale in localesData"
                                     :key="singleLocale.id"
                                   >
                                     <CDropdownItem>
@@ -199,7 +199,7 @@
                                             this.dataToSend.resources[n]
                                               .localeCode
                                           "
-                                          @click.prevent="
+                                          @change="
                                             setLanguage_add_lender(
                                               singleLocale.code,
                                               n,
@@ -304,13 +304,14 @@
                   () => {
                     //visibleVerticallyCenteredDemo = false
                     this.count_add = 1
-                    this.dataToSend.resources = [
+                    ;(this.dataToSend.resources = [
                       {
                         resourceName: '',
                         resourceDesc: '',
                         localeCode: '',
                       },
-                    ]
+                    ]),
+                      getLocales()
                   }
                 "
               >
@@ -787,29 +788,27 @@
             </CTableDataCell>
             <CTableDataCell> {{ singleLender.id }} </CTableDataCell>
             <CTableDataCell> {{ singleLender.code }} </CTableDataCell>
-            <CTableDataCell
-              v-for="(singleResource, index) in singleLender.resources"
-              :key="singleResource.id"
-              v-show="index <= 1"
-            >
-              {{ singleResource.resourceName }}
+            <CTableDataCell>
+              {{ singleLender.Name }}
+            </CTableDataCell>
+            <CTableDataCell>
+              {{ singleLender.Namee }}
             </CTableDataCell>
 
-            <CTableDataCell v-show="singleLender.resources.length == 1"
+            <!-- <CTableDataCell v-show="singleLender.resources.length == 1"
               >--
-            </CTableDataCell>
+            </CTableDataCell> -->
 
             <!-- <CTableDataCell> Otto </CTableDataCell> -->
-            <CTableDataCell
-              v-for="(singleResource, index) in singleLender.resources"
-              :key="singleResource.id"
-              v-show="index <= 1"
-            >
-              {{ singleResource.resourceDesc }}
+            <CTableDataCell>
+              {{ singleLender.Description }}
             </CTableDataCell>
-            <CTableDataCell v-show="singleLender.resources.length == 1"
+            <CTableDataCell>
+              {{ singleLender.Descriptions }}
+            </CTableDataCell>
+            <!-- <CTableDataCell v-show="singleLender.resources.length == 1"
               >--
-            </CTableDataCell>
+            </CTableDataCell> -->
 
             <!--<CTableDataCell> Vivamus neque lorem </CTableDataCell> -->
           </CTableRow>
@@ -994,14 +993,19 @@
                             v-for="singleLocale in this.localesData"
                             :key="singleLocale.id"
                           >
-                            <CDropdownItem>
+                            <CDropdownItem
+                              v-if="
+                                this.CurrentlenderByID[res_index].localeCode !==
+                                singleLocale.code
+                              "
+                            >
                               <div class="d-flex align-items-center form-check">
                                 <input
                                   class="form-check-input"
                                   type="radio"
                                   name="flexRadioDefault"
                                   id="flexRadioDefault1"
-                                  @click="
+                                  @change="
                                     update_set_lang(
                                       res_index,
                                       singleLocale.name,
@@ -1098,9 +1102,14 @@ import editIcon from '@/assets/images/icons/edit.png'
 import settingIcon from '@/assets/images/icons/gear.png'
 import checkIcon from '@/assets/images/icons/check.png'
 import deleteIcon from '@/assets/images/icons/delete.png'
+import { useCookies } from 'vue3-cookies'
 
 export default {
   name: 'Dashboard',
+  setup() {
+    const { cookies } = useCookies()
+    return { cookies }
+  },
   data() {
     return {
       // Get User Id through params
@@ -1154,6 +1163,25 @@ export default {
         locale1: '',
         locale2: '',
       },
+
+      // Final Lender grid data
+      arrayObjects: [],
+
+      languages_codes: [],
+    }
+  },
+
+  mounted() {
+    let my_cookie_value = this.cookies.get('rso-cookie')
+    console.log(my_cookie_value)
+
+    if (this.cookies.isKey('rso-cookie')) {
+      console.log('Has Cookie')
+    } else {
+      console.log('Has not Cookie')
+      localStorage.removeItem('token')
+      localStorage.removeItem('user_id')
+      this.$router.push('/')
     }
   },
 
@@ -1182,25 +1210,34 @@ export default {
       //   )
 
       return (
-        Object.values(this.lendersData)
+        Object.values(this.arrayObjects)
 
           // Filter Global Search Bar and Language Search
 
           .filter((item) => {
             return (
               item.code.toLowerCase().indexOf(this.filter.toLowerCase()) >= 0 ||
-              item.resources.some(
-                ({ resourceName }) =>
-                  resourceName
-                    .toLowerCase()
-                    .indexOf(this.filter.toLowerCase()) >= 0 ||
-                  item.resources.some(
-                    ({ resourceDesc }) =>
-                      resourceDesc
-                        .toLowerCase()
-                        .indexOf(this.filter.toLowerCase()) >= 0,
-                  ),
-              )
+              item.Name.toLowerCase().indexOf(this.filter.toLowerCase()) >= 0 ||
+              item.Namee.toLowerCase().indexOf(this.filter.toLowerCase()) >=
+                0 ||
+              item.Description.toLowerCase().indexOf(
+                this.filter.toLowerCase(),
+              ) >= 0 ||
+              item.Descriptions.toLowerCase().indexOf(
+                this.filter.toLowerCase(),
+              ) >= 0
+              // item.resources.some(
+              //   ({ resourceName }) =>
+              //     resourceName
+              //       .toLowerCase()
+              //       .indexOf(this.filter.toLowerCase()) >= 0 ||
+              //     item.resources.some(
+              //       ({ resourceDesc }) =>
+              //         resourceDesc
+              //           .toLowerCase()
+              //           .indexOf(this.filter.toLowerCase()) >= 0,
+              //     ),
+              // )
             )
           })
 
@@ -1214,8 +1251,11 @@ export default {
             if (this.sort_direction === 'desc')
               return len1.code.localeCompare(len2.code)
             if (this.sort_direction_name === 'desc')
-              return len1.resources[0].resourceName.localeCompare(
-                len2.resources[0].resourceName,
+              return len1.Name.localeCompare(
+                len2.Name,
+
+                // return len1.resources[0].resourceName.localeCompare(
+                //   len2.resources[0].resourceName,
               )
 
             // This is for asc & desc sorting
@@ -1278,6 +1318,7 @@ export default {
         })
         .then((response) => {
           if (response.status == '200') {
+            this.$router.go()
             this.getLenders_by_user()
           } else {
             alert('Record not loaded')
@@ -1290,14 +1331,9 @@ export default {
       console.log(n + lang_name + this.dataToSend.resources[n].localeCode)
       this.selected_lang[n] = lang_name
 
-      // let languages_codes = []
-
-      // languages_codes.push(code)
-
-      // console.log(
-      //   'This is selelected locale array:' + this.selected_lang,
-      //   languages_codes,
-      // )
+      this.localesData = this.localesData.filter(
+        (item) => item.code !== this.dataToSend.resources[n].localeCode,
+      )
     },
 
     // post APIS FUNCTIONS
@@ -1341,6 +1377,7 @@ export default {
             //this.getLenders()
             this.getLenders_by_user()
             this.$router.go()
+            this.$router.push('/dashboard')
           } else {
             alert('Record not loaded')
           }
@@ -1348,11 +1385,13 @@ export default {
     },
 
     add_resources() {
-      this.dataToSend.resources.push({
-        resourceName: '',
-        resourceDesc: '',
-        localeCode: '',
-      })
+      if (this.dataToSend.resources.length <= 2) {
+        this.dataToSend.resources.push({
+          resourceName: '',
+          resourceDesc: '',
+          localeCode: '',
+        })
+      }
     },
 
     // Lender Link to user
@@ -1541,6 +1580,70 @@ export default {
         .then((response) => {
           if (response.status == '200') {
             this.lendersData = response.data
+
+            var i
+            var obj = {}
+            var resourceName1 = ''
+            var resourceName2 = ''
+            var resourceDesc1 = ''
+            var resourceDesc2 = ''
+            for (i = 0; i < this.lendersData.length; i++) {
+              if (this.lendersData[i].resources == null) {
+                resourceName1 = '--'
+                resourceName2 = '--'
+              } else {
+                if (
+                  this.lendersData[i].resources[0] != null &&
+                  this.lendersData[i].resources[0].localeCode ===
+                    this.get_user_locale1
+                ) {
+                  resourceName1 = this.lendersData[i].resources[0].resourceName
+                  resourceDesc1 = this.lendersData[i].resources[0].resourceDesc
+                } else if (
+                  this.lendersData[i].resources[1] != null &&
+                  this.lendersData[i].resources[1].localeCode ===
+                    this.get_user_locale1
+                ) {
+                  resourceName1 = this.lendersData[i].resources[1].resourceName
+                  resourceDesc1 = this.lendersData[i].resources[1].resourceDesc
+                } else {
+                  resourceName1 = '--'
+                  resourceDesc1 = '--'
+                }
+                if (
+                  this.lendersData[i].resources[1] != null &&
+                  this.lendersData[i].resources[1].localeCode ===
+                    this.get_user_locale2
+                ) {
+                  resourceName2 = this.lendersData[i].resources[1].resourceName
+                  resourceDesc2 = this.lendersData[i].resources[1].resourceDesc
+                } else if (
+                  this.lendersData[i].resources[0] != null &&
+                  this.lendersData[i].resources[0].localeCode ===
+                    this.get_user_locale2
+                ) {
+                  resourceName2 = this.lendersData[i].resources[0].resourceName
+                  resourceDesc2 = this.lendersData[i].resources[0].resourceDesc
+                } else {
+                  resourceName2 = '--'
+                  resourceDesc2 = '--'
+                }
+              }
+
+              obj = {
+                id: this.lendersData[i].id,
+                code: this.lendersData[i].code,
+                Name: resourceName1,
+                Namee: resourceName2,
+                Description: resourceDesc1,
+                Descriptions: resourceDesc2,
+                isActive: 1,
+                resources: 'test',
+              }
+              this.arrayObjects.push(obj)
+            }
+
+            console.log('This is my new grid data', this.arrayObjects)
           } else {
             alert('Record not loaded')
           }

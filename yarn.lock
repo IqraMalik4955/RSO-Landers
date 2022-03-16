@@ -8698,6 +8698,13 @@
   "resolved" "https://registry.npmjs.org/vue/-/vue-2.6.14.tgz"
   "version" "2.6.14"
 
+"vue3-cookies@^1.0.6":
+  "integrity" "sha512-a1UvVD0qIgxyOqjlSOwnLnqAnz8ASltugEv8yX+96i/WGZAN9fEDci7xO4HIWZE1uToUnRq9JnFhvfDCSo45OA=="
+  "resolved" "https://registry.npmjs.org/vue3-cookies/-/vue3-cookies-1.0.6.tgz"
+  "version" "1.0.6"
+  dependencies:
+    "vue" "^3.0.0"
+
 "vue3-google-oauth2@^1.0.6":
   "integrity" "sha512-ebUW3V1jejImw2z9nggjczPj4jUnZArNq+kgTdLdGuf6k/zQDDCeGTLmTUiy5gSXMbzVz9PQWiVEj8eX6y/I0Q=="
   "resolved" "https://registry.npmjs.org/vue3-google-oauth2/-/vue3-google-oauth2-1.0.6.tgz"

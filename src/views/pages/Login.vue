@@ -71,14 +71,17 @@
 
 <script>
 import VueImg from '@/assets/images/img-1.jpg'
+import { useCookies } from 'vue3-cookies'
 
 export default {
   name: 'Login',
   setup() {
+    const { cookies } = useCookies()
     return {
       VueImg,
       isInit: false,
       isSignIn: false,
+      cookies,
     }
   },
   data() {
@@ -118,6 +121,7 @@ export default {
               )
               window.localStorage.setItem('token', response.data.token)
               window.localStorage.setItem('user_id', response.data.user.id)
+              this.cookies.set('rso-cookie', 'cookie-running', 300)
               this.$router.push('/dashboard')
             } else {
               alert('Record not loaded')
@@ -142,6 +146,7 @@ export default {
           if (response.status == '200') {
             window.localStorage.setItem('token', response.data.token)
             window.localStorage.setItem('user_id', user_id)
+            this.cookies.set('rso-cookie', 'cookie-running', 300)
             this.$router.push('/dashboard')
           } else {
             alert('Record not loaded')

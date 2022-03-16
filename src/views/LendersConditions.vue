@@ -177,7 +177,7 @@
                                         type="radio"
                                         name="flexRadioDefault"
                                         id="flexRadioDefault1"
-                                        @click="
+                                        @change="
                                           setflag_lookup_lang_one(
                                             singleLocale.code,
                                             singleLocale.name,
@@ -312,7 +312,7 @@
                                         type="radio"
                                         name="flexRadioDefault"
                                         id="flexRadioDefault1"
-                                        @click="
+                                        @change="
                                           setflag_lookup_lang_two(
                                             singleLocale.code,
                                             singleLocale.name,
@@ -448,7 +448,7 @@
                                         type="radio"
                                         name="flexRadioDefault"
                                         id="flexRadioDefault1"
-                                        @click="
+                                        @change="
                                           setflag_lookup_lang_three(
                                             singleLocale.code,
                                             singleLocale.name,
@@ -518,7 +518,15 @@
                 color="dark"
                 @click="
                   () => {
-                    visibleVerticallyCenteredDemo2 = false
+                    this.add_lookup_conditions = {}
+                    this.first_note = ''
+                    this.second_note = ''
+                    this.third_note = ''
+                    this.lookup_lang_one_code = ''
+                    this.lookup_lang_two_code = ''
+                    this.lookup_lang_three_code = ''
+                    //visibleVerticallyCenteredDemo2 = false
+                    getLocales()
                   }
                 "
               >
@@ -902,12 +910,15 @@
                 <CFormInput
                   type="date"
                   class="form-control form-control-sm"
-                  id="colFormLabelSm"
+                  id="my-publish-date"
                   v-model="this.add_lender_conditions.publishDate"
                 />
               </CCol>
               <CCol class="col-6 col-md-2 col-lg-2 ms-auto my-2 my-lg-0">
-                <CButton class="text-white btn-info btn-sm py-0 w-100">
+                <CButton
+                  class="text-white btn-info btn-sm py-0 w-100"
+                  @click.prevent="add_publish_date()"
+                >
                   PUBLISH
                 </CButton>
               </CCol>
@@ -1144,15 +1155,20 @@
                 readonly
               />
             </CTableDataCell>
-            <CTableDataCell
-              v-for="(singlenote, index) in single_lookupcondition.notes"
-              :key="singlenote.id"
-              v-show="index <= 1"
-            >
+            <CTableDataCell>
               <CFormInput
                 type="text"
                 id="lenderCodeField"
-                :value="singlenote.note"
+                :value="single_lookupcondition.note_locale1"
+                readonly
+              />
+            </CTableDataCell>
+
+            <CTableDataCell>
+              <CFormInput
+                type="text"
+                id="lenderCodeField"
+                :value="single_lookupcondition.note_locale2"
                 readonly
               />
             </CTableDataCell>
@@ -1309,14 +1325,16 @@
                           v-for="singleLocale in this.localesData"
                           :key="singleLocale.id"
                         >
-                          <CDropdownItem>
+                          <CDropdownItem
+                            v-if="singleNote.locale !== singleLocale.code"
+                          >
                             <div class="d-flex align-items-center form-check">
                               <input
                                 class="form-check-input"
                                 type="radio"
                                 name="flexRadioDefault"
                                 id="flexRadioDefault1"
-                                @click="
+                                @change="
                                   update_lookup_lang(singleLocale.code, i)
                                 "
                               />
@@ -1397,11 +1415,17 @@
 </template>
 <script>
 import Multiselect from '@vueform/multiselect'
+import { useCookies } from 'vue3-cookies'
 export default {
   name: 'Lenders Conditions',
 
   components: {
     Multiselect,
+  },
+
+  setup() {
+    const { cookies } = useCookies()
+    return { cookies }
   },
 
   data() {
@@ -1777,6 +1801,9 @@ export default {
 
       // Get tags
       getall_tags: [],
+
+      // Get new structure notes
+      arrayObjects: [],
     }
   },
   beforeCreate: function () {
@@ -1788,7 +1815,21 @@ export default {
     }
   },
 
-  mounted: function () {},
+  mounted() {
+    //this.cookies.set('rso-cookie', 'cookie-running', 60)
+
+    let my_cookie_value = this.cookies.get('rso-cookie')
+    console.log(my_cookie_value)
+
+    if (this.cookies.isKey('rso-cookie')) {
+      console.log('Has Cookie')
+    } else {
+      console.log('Has not Cookie')
+      localStorage.removeItem('token')
+      localStorage.removeItem('user_id')
+      this.$router.push('/')
+    }
+  },
 
   created: function () {
     this.getLocales(),
@@ -1801,12 +1842,13 @@ export default {
 
   computed: {
     filtered_conditions: function () {
-      console.log(
-        'i m in Conditions filter' + this.currentlender_lookup_conditions,
-      )
+      // console.log(
+      //   'i m in Conditions filter' + this.currentlender_lookup_conditions,
+      // )
 
       return (
-        Object.values(this.currentlender_lookup_conditions)
+        //this.currentlender_lookup_conditions
+        Object.values(this.arrayObjects)
 
           // Filter Global Search Bar and Language Search
 
@@ -1826,6 +1868,18 @@ export default {
   },
 
   methods: {
+    add_publish_date() {
+      var d = new Date()
+      var month = d.getMonth() + 1
+      var day = d.getDate()
+      var year = d.getFullYear()
+
+      var my_publish_date = `${year}-${month}-${day}`
+      console.log('my today date', `${year}-${month}-${day}`)
+      this.add_lender_conditions.publishDate = my_publish_date
+
+      document.getElementById('my-publish-date').valueAsDate = new Date()
+    },
     sort_lenders_condtion(name) {
       console.log(name)
       this.sort_direction = 'asc'
@@ -1880,6 +1934,59 @@ export default {
             this.lenderByID = response.data
             this.user_name = response.data.resources[0].resourceName
             this.currentlender_lookup_conditions = response.data.conditions
+
+            var i
+            var obj = {}
+            var note1 = ''
+            var note2 = ''
+
+            for (i = 0; i < this.currentlender_lookup_conditions.length; i++) {
+              if (this.currentlender_lookup_conditions[i].notes == null) {
+                note1 = '--'
+                note2 = '--'
+              } else {
+                if (
+                  this.currentlender_lookup_conditions[i].notes[0] != null &&
+                  this.currentlender_lookup_conditions[i].notes[0].locale ===
+                    this.get_user_locale1
+                ) {
+                  note1 = this.currentlender_lookup_conditions[i].notes[0].note
+                } else if (
+                  this.currentlender_lookup_conditions[i].notes[1] != null &&
+                  this.currentlender_lookup_conditions[i].notes[1].locale ===
+                    this.get_user_locale1
+                ) {
+                  note1 = this.currentlender_lookup_conditions[i].notes[1].note
+                } else {
+                  note1 = '--'
+                }
+                if (
+                  this.currentlender_lookup_conditions[i].notes[0] != null &&
+                  this.currentlender_lookup_conditions[i].notes[0].locale ===
+                    this.get_user_locale2
+                ) {
+                  note2 = this.currentlender_lookup_conditions[i].notes[0].note
+                } else if (
+                  this.currentlender_lookup_conditions[i].notes[1] != null &&
+                  this.currentlender_lookup_conditions[i].notes[1].locale ===
+                    this.get_user_locale2
+                ) {
+                  note2 = this.currentlender_lookup_conditions[i].notes[1].note
+                } else {
+                  note2 = '--'
+                }
+              }
+
+              obj = {
+                id: this.currentlender_lookup_conditions[i].id,
+                name: this.currentlender_lookup_conditions[i].name,
+                value: this.currentlender_lookup_conditions[i].value,
+                note_locale1: note1,
+                note_locale2: note2,
+              }
+              this.arrayObjects.push(obj)
+            }
+
             console.log(
               'This is my single lender IN Lender Conditions:' +
                 JSON.stringify(this.currentlender_lookup_conditions),
@@ -2200,6 +2307,10 @@ export default {
       this.lookup_lang_one_name = lang_name
       this.lookup_lang_one_code = code
 
+      this.localesData = this.localesData.filter(
+        (item) => item.code !== this.lookup_lang_one_code,
+      )
+
       console.log(
         'Simple Lender Conditions detail flag one:' +
           '' +
@@ -2212,6 +2323,10 @@ export default {
       this.lookup_lang_two_name = lang_name
       this.lookup_lang_two_code = code
 
+      this.localesData = this.localesData.filter(
+        (item) => item.code !== this.lookup_lang_two_code,
+      )
+
       console.log(
         'Simple Lender Conditions detail flag two:' +
           '' +
@@ -2223,6 +2338,10 @@ export default {
     setflag_lookup_lang_three(code, lang_name) {
       this.lookup_lang_three_name = lang_name
       this.lookup_lang_three_code = code
+
+      this.localesData = this.localesData.filter(
+        (item) => item.code !== this.lookup_lang_three_code,
+      )
 
       console.log(
         'Simple Lender Conditions detail flag three:' +
@@ -2275,7 +2394,7 @@ export default {
       let token = this.token
 
       if (this.lookup_condition_name_type !== '') {
-        alert('Not Empty')
+        // alert('Not Empty')
         let arranging_name_type = []
         let update_lookup_condition_name
         let update_lookup_condition_type

@@ -404,11 +404,17 @@
 <script>
 import Multiselect from '@vueform/multiselect'
 import checkIcon from '@/assets/images/icons/check.png'
+import { useCookies } from 'vue3-cookies'
+
 export default {
   components: {
     Multiselect,
   },
   name: 'Login',
+  setup() {
+    const { cookies } = useCookies()
+    return { cookies }
+  },
   data() {
     return {
       json_data: [
@@ -751,6 +757,23 @@ export default {
       searchedFirstName: '',
     }
   },
+
+  mounted() {
+    //this.cookies.set('rso-cookie', 'cookie-running', 60)
+
+    let my_cookie_value = this.cookies.get('rso-cookie')
+    console.log(my_cookie_value)
+
+    if (this.cookies.isKey('rso-cookie')) {
+      console.log('Has Cookie')
+    } else {
+      console.log('Has not Cookie')
+      localStorage.removeItem('token')
+      localStorage.removeItem('user_id')
+      this.$router.push('/')
+    }
+  },
+
   beforeCreate: function () {
     if (localStorage.getItem('token') === null) {
       console.log('you can not access')

@@ -16,12 +16,15 @@
 
 <script>
 import avatar from '@/assets/images/avatars/8.jpg'
+import { useCookies } from 'vue3-cookies'
 export default {
   name: 'AppHeaderDropdownAccnt',
   setup() {
+    const { cookies } = useCookies()
     return {
       avatar: avatar,
       itemsCount: 42,
+      cookies,
     }
   },
   methods: {
@@ -29,6 +32,7 @@ export default {
       //alert(localStorage.getItem('token'))
       localStorage.removeItem('token')
       localStorage.removeItem('user_id')
+      this.cookies.remove('rso-cookie')
       this.$router.push('/')
     },
   },
